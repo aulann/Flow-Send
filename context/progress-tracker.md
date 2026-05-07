@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 06: next up — WebRTC peer connection.
+- Feature 07: complete — device detection implemented and `npm run build` passes.
 
 ## Current Goal
 
-- Implement Feature 06 (see spec when available).
+- Feature 09: text / link / clipboard transfer over WebRTC data channel.
 
 ## Completed
 
@@ -31,6 +31,28 @@ Update this file whenever the current phase, active feature, or implementation s
 - None.
 
 ## Recently Completed
+
+- **Feature 07 — Device Detection** (`npm run build` passes):
+  - `types/session.ts` — `DeviceType` and `DeviceInfo` interface added.
+  - `lib/device.ts` — User-Agent parsing: OS + browser detection, device type classification.
+  - `lib/geolocation.ts` — `geoip-lite` IP lookup, IPv6-mapped address handling.
+  - `app/api/device/route.ts` — `GET /api/device`: reads UA + IP, returns JSON.
+  - `next.config.ts` — `serverExternalPackages: ["geoip-lite"]` (prevents Turbopack bundling issue with `__dirname`).
+  - `store/session.store.ts` — `deviceInfo` field + `setDeviceInfo` setter added.
+  - `types/transfer.ts` — `DeviceInfoFrame` control frame type.
+  - `components/shared/device-badge.tsx` — Reusable device banner with Phosphor icon, sketch style.
+  - `hooks/use-device-info.ts` — Hook for fetching own device info from `/api/device`.
+  - `hooks/use-peer-connection.ts` — On connect: fetches own device info, sends `device-info` frame over data channel; on receive: parses frame and calls `setDeviceInfo`.
+  - `components/receive/receive-waiting.tsx` — Shows `DeviceBadge` on connected status.
+  - `components/send/send-waiting.tsx` — Shows `DeviceBadge` on connected status.
+
+- **Feature 06 — WebRTC Peer Connection** (`npm run build` passes):
+  - `types/session.ts` — `PeerRole` and `ConnectionStatus` types.
+  - `store/session.store.ts` — Zustand store: `code`, `role`, `status`, `error`, setters, `reset`.
+  - `hooks/use-peer-connection.ts` — full implementation: PartySocket room management, dynamic `simple-peer` import, initiator/non-initiator logic, signal relay, `peer-joined`/`peer-left`/`room-full` handling.
+  - `hooks/use-session.ts` — added `paused` parameter to stop countdown during signaling/connected.
+  - `components/receive/receive-waiting.tsx` — wired `usePeerConnection("receiver")`, status-aware render (connected / error / waiting QR).
+  - `components/send/send-waiting.tsx` — replaced placeholder with real `usePeerConnection("sender")`, full status-aware render.
 
 - **Feature 05 — Send Page: QR Scanner + Manual Code Input** (`npm run build` passes):
   - `lib/qr.ts` — `parseQrPayload()` (URL pattern + raw 6-char fallback), `isValidCode()`.
@@ -59,8 +81,6 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Feature 07: WebRTC peer connection — `hooks/use-peer-connection.ts`, connect both peers via PartyKit signaling, confirm data channel established.
-- Feature 08: Device detection — `GET /api/device`, user-agent + `geoip-lite` geolocation, device info displayed post-connection on send and receive screens.
 - Feature 09: Text / link / clipboard transfer — send and display the three text-based transfer types over the WebRTC data channel.
 - Feature 10: File transfer (image, video, file) — chunked binary transfer via WebRTC data channel, progress bar, blob reassembly on receiver.
 - Feature 11: Receive board — full pin-board UI with dot-grid background, rotated sketch cards, Download / Copy / Share / Remove actions.

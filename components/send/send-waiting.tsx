@@ -4,21 +4,27 @@ import Link from "next/link"
 import { ArrowLeft, WarningCircle } from "@phosphor-icons/react"
 import { useQrScanner } from "@/hooks/use-qr-scanner"
 import { isValidCode } from "@/lib/qr"
-
-type PageState = "idle" | "connecting"
+import { usePeerConnection } from "@/hooks/use-peer-connection"
+import { useSessionStore } from "@/store/session.store"
+import { DeviceBadge } from "@/components/shared/device-badge"
 
 export function SendWaiting() {
-  const [pageState, setPageState] = useState<PageState>("idle")
-  const [capturedCode, setCapturedCode] = useState("")
+  const [code, setCode] = useState<string | null>(null)
+  const deviceInfo = useSessionStore((s) => s.deviceInfo)
   const [inputs, setInputs] = useState<string[]>(Array(6).fill(""))
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  const handleCode = useCallback((code: string) => {
-    setCapturedCode(code)
-    setPageState("connecting")
+  const handleData = useCallback((data: string | ArrayBuffer) => {
+    console.log("received data", data)
   }, [])
 
-  const { status } = useQrScanner("qr-reader", handleCode)
+  const { status, error, disconnect } = usePeerConnection("sender", code, handleData)
+
+  const handleCode = useCallback((scanned: string) => {
+    setCode(scanned)
+  }, [])
+
+  const { status: scannerStatus } = useQrScanner("qr-reader", handleCode)
 
   function handleInputChange(index: number, value: string) {
     const char = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(-1)
@@ -46,29 +52,76 @@ export function SendWaiting() {
   }
 
   function handleConnect() {
-    const code = inputs.join("")
-    if (isValidCode(code)) handleCode(code)
+    const joined = inputs.join("")
+    if (isValidCode(joined)) handleCode(joined)
   }
 
-  if (pageState === "connecting") {
+  if (status === "connected") {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center px-4"
+        className="min-h-screen flex items-center justify-center px-4"
         style={{ background: "var(--bg-base)" }}
       >
         <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
-          <div className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+          <div className="text-lg font-semibold" style={{ color: "var(--state-success)" }}>
+            Połączono
+          </div>
+          {deviceInfo && (
+            <DeviceBadge device={deviceInfo} label="Wysyła z" />
+          )}
+          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
+            Wybór typu transferu zostanie zaimplementowany w Feature 09.
+          </p>
+          <button
+            onClick={disconnect}
+            className="sketch-btn px-5 py-2 text-sm font-medium"
+            style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}
+          >
+            Rozłącz
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === "signaling" || status === "waiting") {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: "var(--bg-base)" }}
+      >
+        <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
+          <div className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
             Łączenie…
           </div>
-          <div
-            className="font-mono text-sm tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
-            {capturedCode}
-          </div>
-          <p className="text-xs text-center" style={{ color: "var(--text-faint)" }}>
-            WebRTC zostanie wdrożone w Feature 07
+          <p className="text-xs font-mono tracking-widest" style={{ color: "var(--text-muted)" }}>
+            {code}
           </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === "error") {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: "var(--bg-base)" }}
+      >
+        <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
+          <div className="text-base font-semibold" style={{ color: "var(--state-error)" }}>
+            Błąd połączenia
+          </div>
+          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
+            {error}
+          </p>
+          <button
+            onClick={() => setCode(null)}
+            className="sketch-btn px-5 py-2 text-sm font-medium"
+            style={{ background: "var(--accent-primary)", color: "#fff" }}
+          >
+            Skanuj ponownie
+          </button>
         </div>
       </div>
     )
@@ -76,7 +129,7 @@ export function SendWaiting() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative"
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-8 pb-32 relative"
       style={{ background: "var(--bg-base)" }}
     >
       <div
@@ -113,7 +166,7 @@ export function SendWaiting() {
 
         <div className="sketch-card p-4 flex flex-col gap-5">
 
-          {status === "denied" || status === "error" ? (
+          {scannerStatus === "denied" || scannerStatus === "error" ? (
             <div
               className="w-full flex flex-col items-center justify-center gap-2 py-10"
               style={{
@@ -124,7 +177,7 @@ export function SendWaiting() {
             >
               <WarningCircle size={32} style={{ color: "var(--text-muted)" }} />
               <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
-                {status === "denied"
+                {scannerStatus === "denied"
                   ? "Brak dostępu do kamery. Wpisz kod ręcznie."
                   : "Nie udało się uruchomić kamery. Wpisz kod ręcznie."}
               </p>
