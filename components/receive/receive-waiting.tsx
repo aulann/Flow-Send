@@ -1,5 +1,6 @@
 "use client"
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
+import type { DeviceInfo } from "@/types/session"
 import QRCode from "react-qr-code"
 import Link from "next/link"
 import { ArrowLeft } from "@phosphor-icons/react"
@@ -12,6 +13,14 @@ export function ReceiveWaiting() {
   const connectionStatus = useSessionStore((s) => s.status)
   const deviceInfo = useSessionStore((s) => s.deviceInfo)
 
+  const deviceInfoRef = useRef<DeviceInfo | null>(null)
+  useEffect(() => {
+    fetch("/api/device")
+      .then(r => r.json())
+      .then(info => { deviceInfoRef.current = info })
+      .catch(() => {})
+  }, [])
+
   const handleData = useCallback((data: string | ArrayBuffer) => {
     console.log("received data", data)
   }, [])
@@ -20,7 +29,7 @@ export function ReceiveWaiting() {
     connectionStatus === "connected" || connectionStatus === "signaling"
   )
 
-  const { status, error, disconnect } = usePeerConnection("receiver", code, handleData)
+  const { status, error, disconnect } = usePeerConnection("receiver", code, handleData, deviceInfoRef.current)
 
   if (status === "connected") {
     return (

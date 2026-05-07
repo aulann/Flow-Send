@@ -7,7 +7,8 @@ import type { PeerRole, DeviceInfo } from "@/types/session"
 export function usePeerConnection(
   role: PeerRole,
   code: string | null,
-  onData: (data: string | ArrayBuffer) => void
+  onData: (data: string | ArrayBuffer) => void,
+  ownDeviceInfo: DeviceInfo | null
 ) {
   const { status, error, setStatus, setError, setDeviceInfo } = useSessionStore()
   const peerRef = useRef<import("simple-peer").Instance | null>(null)
@@ -48,12 +49,9 @@ export function usePeerConnection(
 
       peer.on("connect", () => {
         setStatus("connected")
-        fetch("/api/device")
-          .then(r => r.json())
-          .then((info: DeviceInfo) => {
-            peer.send(JSON.stringify({ type: "device-info", ...info }))
-          })
-          .catch(() => {})
+        if (ownDeviceInfo) {
+          peer.send(JSON.stringify({ type: "device-info", ...ownDeviceInfo }))
+        }
       })
 
       peer.on("data", (raw) => {
