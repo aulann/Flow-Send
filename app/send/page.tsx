@@ -1,5 +1,5 @@
-import { SendWaiting } from "@/components/send/send-waiting"
+import { ScannerLoader } from "@/components/send/scanner-loader"
 
 export default function SendPage() {
-  return <SendWaiting />
+  return <ScannerLoader />
 }
