@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base: #F7F6F1;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #EFEEE8;
+  --bg-muted: #E5E4DC;
+
+  --border-ink: #2B2B28;
+  --border-light: #C8C7BE;
+  --border-subtle: #E0DFD8;
+
+  --text-primary: #1A1917;
+  --text-secondary: #4A4845;
+  --text-muted: #8A8880;
+  --text-faint: #B8B7AF;
+
+  --accent-primary: #1D4ED8;
+  --accent-primary-dim: rgba(29, 78, 216, 0.10);
+  --accent-warm: #D97706;
+  --accent-warm-dim: rgba(217, 119, 6, 0.10);
+
+  --state-success: #16A34A;
+  --state-error: #DC2626;
+  --state-warning: #D97706;
+
+  --dot-grid: #D1D0C8;
+  --dot-spacing: 24px;
+
+  --font-primary: "Cause", sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-base: var(--bg-base);
+  --color-card: var(--bg-card);
+  --color-subtle: var(--bg-subtle);
+  --color-muted: var(--bg-muted);
+
+  --color-border-ink: var(--border-ink);
+  --color-border-light: var(--border-light);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  --color-accent: var(--accent-primary);
+  --color-accent-dim: var(--accent-primary-dim);
+  --color-accent-warm: var(--accent-warm);
+  --color-accent-warm-dim: var(--accent-warm-dim);
+
+  --color-success: var(--state-success);
+  --color-error: var(--state-error);
+  --color-warning: var(--state-warning);
+
+  --font-sans: var(--font-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .sketch-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-ink);
+    border-radius: 12px 13px 11px 12px;
+    box-shadow: 3px 3px 0px 0px var(--border-ink);
+  }
+
+  .sketch-card-sm {
+    background: var(--bg-card);
+    border: 2px solid var(--border-ink);
+    border-radius: 10px 11px 9px 10px;
+    box-shadow: 2px 2px 0px 0px var(--border-ink);
+  }
+
+  .sketch-card-dash {
+    background: var(--bg-card);
+    border: 2px dashed var(--border-ink);
+    border-radius: 10px 11px 9px 10px;
+  }
+
+  .sketch-btn {
+    border: 2px solid var(--border-ink);
+    border-radius: 10px 11px 10px 10px;
+    box-shadow: 3px 3px 0px 0px var(--border-ink);
+    transition: box-shadow 80ms ease, transform 80ms ease;
+    cursor: pointer;
+  }
+
+  .sketch-btn:hover {
+    box-shadow: 1px 1px 0px 0px var(--border-ink);
+  }
+
+  .sketch-btn:active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+
+  .sketch-input {
+    background: var(--bg-card);
+    border: 2px solid var(--border-ink);
+    border-radius: 10px 10px 10px 11px;
+  }
+
+  .sketch-input:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  .dot-grid {
+    background-color: var(--bg-subtle);
+    background-image: radial-gradient(circle, var(--dot-grid) 1.5px, transparent 1.5px);
+    background-size: var(--dot-spacing) var(--dot-spacing);
+  }
 }
