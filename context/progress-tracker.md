@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 03: PartyKit signaling server.
+- Feature 06: next up — WebRTC peer connection.
 
 ## Current Goal
 
-- `party/server.ts` z logiką join/relay/lock. Deploy do PartyKit, weryfikacja limitu 2 urządzeń.
+- Implement Feature 06 (see spec when available).
 
 ## Completed
 
@@ -32,6 +32,22 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Recently Completed
 
+- **Feature 05 — Send Page: QR Scanner + Manual Code Input** (`npm run build` passes):
+  - `lib/qr.ts` — `parseQrPayload()` (URL pattern + raw 6-char fallback), `isValidCode()`.
+  - `hooks/use-qr-scanner.ts` — `useQrScanner()`: dynamic import of `html5-qrcode`, camera lifecycle, one-shot `calledRef` gate, permission error discrimination.
+  - `app/send/page.tsx` — server component shell.
+  - `components/send/send-waiting.tsx` — live QR scanner area, camera-denied/error fallback, 6-box manual code input (auto-advance, backspace, paste), "Połącz →" button, "Łączenie…" placeholder state.
+
+- **Feature 04 — Receive Page: QR Display + Countdown** (`npm run build` passes):
+  - `lib/session.ts` — `generateSessionCode()` (crypto.getRandomValues, 36-char alphabet), `buildQrPayload()`, `isValidSessionCode()`.
+  - `hooks/use-session.ts` — `useReceiverSession()` hook: setTimeout-based 30s countdown, auto-regenerates code on expiry.
+  - `app/receive/page.tsx` — server component shell.
+  - `components/receive/receive-waiting.tsx` — QR code (react-qr-code), 6-char code chips, SVG countdown ring with CSS transition.
+
+- **Feature 03 — PartyKit Signaling Server** (`npx partykit dev` passes):
+  - `party/server.ts` — pełna implementacja: 2-connection limit per room, relay SDP/ICE, `peer-joined`, `peer-left`, `room-full`.
+  - `.env.local` + `partykit.json` — już skonfigurowane poprawnie.
+
 - **Feature 02 — Landing Page** (`npm run build` passes):
   - `components/landing/landing-navbar.tsx` — fixed top bar, logo + "beta" badge.
   - `components/landing/hero-section.tsx` — full-height hero, headline, subtext, CTA buttons, decorative SVG arrow.
@@ -43,10 +59,6 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Feature 03: PartyKit signaling server — `party/server.ts` z logiką join/relay/lock. Deploy do PartyKit, weryfikacja limitu 2 urządzeń.
-- Feature 04: Session code generation and QR display — `/receive` page: generate 6-char code, render QR + countdown ring (30s), auto-regenerate on expiry.
-- Feature 05: Session code generation and QR display — `/receive` page: generate 6-char code, render QR + countdown ring (30s), auto-regenerate on expiry.
-- Feature 06: QR scanner and code input — `/send` page: camera QR scanner (`html5-qrcode`) + manual code input field, validate and parse scanned payload.
 - Feature 07: WebRTC peer connection — `hooks/use-peer-connection.ts`, connect both peers via PartyKit signaling, confirm data channel established.
 - Feature 08: Device detection — `GET /api/device`, user-agent + `geoip-lite` geolocation, device info displayed post-connection on send and receive screens.
 - Feature 09: Text / link / clipboard transfer — send and display the three text-based transfer types over the WebRTC data channel.

@@ -123,3 +123,8 @@ body {
     background-size: var(--dot-spacing) var(--dot-spacing);
   }
 }
+
+@keyframes countdown-bar {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}

@@ -163,17 +163,17 @@ export function HeroSection() {
           </div>
 
           {/* Przyciski — zawsze po obrazku na mobile */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-start">
             <Link
               href="/send"
-              className="sketch-btn font-semibold px-6 py-3 text-base inline-block text-center"
+              className="sketch-btn font-semibold px-6 py-3 text-base text-center"
               style={{ background: "var(--accent-primary)", color: "#ffffff" }}
             >
               Wyślij →
             </Link>
             <Link
               href="/receive"
-              className="sketch-btn font-semibold px-6 py-3 text-base inline-block text-center"
+              className="sketch-btn font-semibold px-6 py-3 text-base text-center"
               style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}
             >
               Odbierz
