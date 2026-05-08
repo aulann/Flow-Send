@@ -1,13 +1,15 @@
 "use client"
-import { useCallback, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import type { DeviceInfo } from "@/types/session"
 import QRCode from "react-qr-code"
 import Link from "next/link"
-import { ArrowLeft } from "@phosphor-icons/react"
+import { ArrowLeftIcon } from "@phosphor-icons/react"
 import { useReceiverSession } from "@/hooks/use-session"
 import { usePeerConnection } from "@/hooks/use-peer-connection"
 import { useSessionStore } from "@/store/session.store"
 import { DeviceBadge } from "@/components/shared/device-badge"
+import { ReceiveBoard } from "@/components/receive/receive-board"
+import { useTransfer } from "@/hooks/use-transfer"
 
 export function ReceiveWaiting() {
   const connectionStatus = useSessionStore((s) => s.status)
@@ -21,40 +23,52 @@ export function ReceiveWaiting() {
       .catch(() => {})
   }, [])
 
-  const handleData = useCallback((data: string | ArrayBuffer) => {
-    console.log("received data", data)
-  }, [])
+  const { handleIncoming } = useTransfer(() => {})
 
   const { code, secondsLeft, qrPayload } = useReceiverSession(
     connectionStatus === "connected" || connectionStatus === "signaling"
   )
 
-  const { status, error, disconnect } = usePeerConnection("receiver", code, handleData, deviceInfoRef.current)
+  const { status, error, disconnect } = usePeerConnection("receiver", code, handleIncoming, deviceInfoRef.current)
 
   if (status === "connected") {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center px-4"
-        style={{ background: "var(--bg-base)" }}
-      >
-        <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
-          <div className="text-lg font-semibold" style={{ color: "var(--state-success)" }}>
-            Połączono
-          </div>
-          {deviceInfo && (
+      <div className="relative">
+        {/* Desktop: badge fixed top-center */}
+        {deviceInfo && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-sm px-4 hidden sm:block">
             <DeviceBadge device={deviceInfo} label="Połączono z" />
-          )}
-          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
-            Tablica odbioru zostanie zaimplementowana w Feature 11.
-          </p>
+          </div>
+        )}
+        {/* Desktop: disconnect fixed bottom-center */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 hidden sm:block">
           <button
             onClick={disconnect}
             className="sketch-btn px-5 py-2 text-sm font-medium"
-            style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}
+            style={{ background: "var(--bg-card)", color: "var(--text-muted)" }}
           >
             Rozłącz
           </button>
         </div>
+        {/* Mobile: fixed bottom bar */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-20 flex flex-col gap-2 p-3 sm:hidden"
+          style={{
+            background: "rgba(237, 232, 220, 0.92)",
+            backdropFilter: "blur(10px)",
+            borderTop: "1px solid rgba(0,0,0,0.08)",
+          }}
+        >
+          {deviceInfo && <DeviceBadge device={deviceInfo} label="Połączono z" />}
+          <button
+            onClick={disconnect}
+            className="sketch-btn w-full py-2 text-sm font-medium"
+            style={{ background: "var(--bg-card)", color: "var(--text-muted)" }}
+          >
+            Rozłącz
+          </button>
+        </div>
+        <ReceiveBoard />
       </div>
     )
   }
@@ -109,7 +123,7 @@ export function ReceiveWaiting() {
             className="inline-flex items-center gap-1 text-sm"
             style={{ color: "var(--text-muted)" }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeftIcon size={16} />
             Strona główna
           </Link>
         </div>

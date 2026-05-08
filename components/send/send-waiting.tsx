@@ -2,12 +2,14 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 import type { DeviceInfo } from "@/types/session"
 import Link from "next/link"
-import { ArrowLeft, WarningCircle } from "@phosphor-icons/react"
+import { ArrowLeftIcon, WarningCircleIcon } from "@phosphor-icons/react"
 import { useQrScanner } from "@/hooks/use-qr-scanner"
 import { isValidCode } from "@/lib/qr"
 import { usePeerConnection } from "@/hooks/use-peer-connection"
 import { useSessionStore } from "@/store/session.store"
 import { DeviceBadge } from "@/components/shared/device-badge"
+import { TransferPanel } from "@/components/send/transfer-panel"
+import { useTransfer } from "@/hooks/use-transfer"
 
 export function SendWaiting() {
   const [code, setCode] = useState<string | null>(null)
@@ -27,7 +29,14 @@ export function SendWaiting() {
     console.log("received data", data)
   }, [])
 
-  const { status, error, disconnect } = usePeerConnection("sender", code, handleData, deviceInfoRef.current)
+  const { status, error, peerRef, send, disconnect } = usePeerConnection("sender", code, handleData, deviceInfoRef.current)
+  const { sendText, sendFile } = useTransfer(send)
+
+  const handleSendFiles = useCallback(async (files: File[]) => {
+    for (const file of files) {
+      await sendFile(file, peerRef)
+    }
+  }, [sendFile, peerRef])
 
   const handleCode = useCallback((scanned: string) => {
     setCode(scanned)
@@ -68,26 +77,25 @@ export function SendWaiting() {
   if (status === "connected") {
     return (
       <div
-        className="min-h-screen flex items-center justify-center px-4"
+        className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative"
         style={{ background: "var(--bg-base)" }}
       >
-        <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
-          <div className="text-lg font-semibold" style={{ color: "var(--state-success)" }}>
-            Połączono
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+              linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="relative z-10 w-full max-w-sm flex flex-col gap-4">
+          {deviceInfo && <DeviceBadge device={deviceInfo} label="Połączono z" />}
+          <div className="sketch-card p-5">
+            <TransferPanel
+              onSendText={sendText}
+              onSendFile={handleSendFiles}
+            />
           </div>
-          {deviceInfo && (
-            <DeviceBadge device={deviceInfo} label="Wysyła z" />
-          )}
-          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
-            Wybór typu transferu zostanie zaimplementowany w Feature 09.
-          </p>
-          <button
-            onClick={disconnect}
-            className="sketch-btn px-5 py-2 text-sm font-medium"
-            style={{ background: "var(--bg-card)", color: "var(--text-primary)" }}
-          >
-            Rozłącz
-          </button>
         </div>
       </div>
     )
@@ -160,7 +168,7 @@ export function SendWaiting() {
           className="inline-flex items-center gap-1 text-sm"
           style={{ color: "var(--text-muted)" }}
         >
-          <ArrowLeft size={16} />
+          <ArrowLeftIcon size={16} />
           Strona główna
         </Link>
 
@@ -184,7 +192,7 @@ export function SendWaiting() {
                 border: "2px dashed var(--border-light)",
               }}
             >
-              <WarningCircle size={32} style={{ color: "var(--text-muted)" }} />
+              <WarningCircleIcon size={32} style={{ color: "var(--text-muted)" }} />
               <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
                 {scannerStatus === "denied"
                   ? "Brak dostępu do kamery. Wpisz kod ręcznie."

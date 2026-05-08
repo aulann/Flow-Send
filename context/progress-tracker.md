@@ -4,11 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 07: complete — device detection implemented and `npm run build` passes.
-
-## Current Goal
-
-- Feature 09: text / link / clipboard transfer over WebRTC data channel.
+- Feature 11: complete — chalkboard receive board implemented and `npm run build` passes.
 
 ## Completed
 
@@ -31,6 +27,31 @@ Update this file whenever the current phase, active feature, or implementation s
 - None.
 
 ## Recently Completed
+
+- **Feature 11 — Receive Board (Chalkboard UI)** (`npm run build` passes):
+  - `app/globals.css` — added `.chalkboard`, `.chalk-grain`, `.chalk-card`, `.chalk-pin` CSS classes with SVG noise grain, smudge gradients, paper card style, and red pin.
+  - `components/receive/receive-board.tsx` — full replacement: chalkboard layout with `ChalkScribbles` SVG overlay, deterministic `hash()` + `cardTransform()` for scattered absolute positions on desktop, rotation-only column layout on mobile, `TextCard`, `FileCard`, `InProgressCard` as pinned paper cards, `ResizeObserver`-based board size tracking, empty state.
+  - `components/receive/receive-waiting.tsx` — connected state redesigned: `ReceiveBoard` fills full viewport, `DeviceBadge` and "Rozłącz" button float as absolutely positioned overlays above the board.
+
+- **Feature 09 — File Transfer** (`npm run build` passes):
+  - `types/transfer.ts` — full replacement: `FileStartFrame`, `FileEndFrame`, `TextTransferItem`, `FileTransferItem` union, `InProgressTransfer`.
+  - `lib/transfer.ts` — implemented: `chunkFile` async generator (64 KB chunks), `formatFileSize`, `mimeToSubtype`.
+  - `store/transfer.store.ts` — added `inProgress`, `sendingProgress`, `setInProgress`, `setSendingProgress`; `removeItem` now revokes blob URLs; `clear` revokes all blob URLs.
+  - `hooks/use-transfer.ts` — added `sendFile` (chunked send with backpressure via RTCDataChannel.bufferedAmount); `handleIncoming` now handles binary ArrayBuffer chunks and `file-start`/`file-end` control frames.
+  - `hooks/use-peer-connection.ts` — fixed `peer.on("data")` handler: JSON frames passed as string, binary Buffer converted to ArrayBuffer before calling `onData`.
+  - `components/send/transfer-panel.tsx` — all 5 tiles active; hidden file input; progress bar while sending; file tile hint.
+  - `components/send/send-waiting.tsx` — wired `peerRef` and `sendFile`; `TransferPanel` uses new `onSendText`/`onSendFile` props.
+  - `components/receive/receive-board.tsx` — `FileItemCard` (image preview, Pobierz link, ✕), `TextItemCard` (existing), `InProgressCard` (receiving progress bar); empty state hides during transfer.
+
+- **Feature 08 — Text & Link Transfer** (`npm run build` passes):
+  - `types/transfer.ts` — expanded: `TransferSubtype`, `TextFrame`, `RemoveFrame`, `ControlFrame` (union), `TransferItem`.
+  - `store/transfer.store.ts` — Zustand store: `items`, `addItem`, `removeItem`, `clear`.
+  - `hooks/use-transfer.ts` — `sendText` (builds TextFrame, calls `send`), `handleIncoming` (parses ControlFrame, adds to store).
+  - `hooks/use-peer-connection.ts` — added `send` helper to return value (writes to `peerRef.current`).
+  - `components/send/transfer-panel.tsx` — type selector (5 tiles: text+link active, image/video/file disabled), textarea/URL input, "Wyślij →" button.
+  - `components/receive/receive-board.tsx` — minimal received items list: ItemCard with copy + remove, empty state with dashed border.
+  - `components/send/send-waiting.tsx` — connected state now shows DeviceBadge + TransferPanel on dot-grid background.
+  - `components/receive/receive-waiting.tsx` — connected state now shows DeviceBadge + ReceiveBoard + Rozłącz button; `handleIncoming` wired as `onData`.
 
 - **Feature 07 — Device Detection** (`npm run build` passes):
   - `types/session.ts` — `DeviceType` and `DeviceInfo` interface added.
@@ -80,10 +101,6 @@ Update this file whenever the current phase, active feature, or implementation s
   - `app/page.tsx` — composed from all landing sections.
 
 ## Next Up
-
-- Feature 09: Text / link / clipboard transfer — send and display the three text-based transfer types over the WebRTC data channel.
-- Feature 10: File transfer (image, video, file) — chunked binary transfer via WebRTC data channel, progress bar, blob reassembly on receiver.
-- Feature 11: Receive board — full pin-board UI with dot-grid background, rotated sketch cards, Download / Copy / Share / Remove actions.
 - Feature 12: Session history (sender side) — session list below transfer type selector showing sent items, per-item delete.
 - Feature 13: Disconnect flow — disconnect button on both sides, session cleanup, return to landing.
 - Feature 14: PWA manifest — `manifest.json`, icons, `meta` tags, installable from browser on Android and iOS.
