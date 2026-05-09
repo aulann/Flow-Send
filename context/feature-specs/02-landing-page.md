@@ -69,7 +69,7 @@ Three steps as sketch cards side-by-side on desktop, stacked on mobile (`grid gr
 
 | Step | Icon (Phosphor Bold) | Title | Description |
 |------|---------------------|-------|-------------|
-| 1 | `DeviceMobile` | Otwórz na obu urządzeniach | Wejdź na flowsend.app z telefonu i komputera — bez instalacji. |
+| 1 | `DeviceMobile` | Otwórz na obu urządzeniach | Wejdź na flow-send.vercel.app z telefonu i komputera — bez instalacji. |
 | 2 | `QrCode` | Zeskanuj kod QR | Na urządzeniu wysyłającym kliknij "Wyślij" i zeskanuj kod z ekranu odbiorcy. |
 | 3 | `CheckCircle` | Gotowe | Pliki pojawiają się od razu. Sesja znika po zamknięciu okna. |
 

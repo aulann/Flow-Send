@@ -1,4 +1,5 @@
-import { PencilLine } from "@phosphor-icons/react/dist/ssr"
+import Link from "next/link"
+import { PaperPlaneTiltIcon } from "@phosphor-icons/react/dist/ssr"
 
 export function LandingNavbar() {
   return (
@@ -10,22 +11,31 @@ export function LandingNavbar() {
       }}
     >
       <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <PencilLine size={24} weight="bold" style={{ color: "var(--text-primary)" }} />
-          <span className="font-bold text-lg" style={{ color: "var(--text-primary)" }}>
+        <Link
+          href="/"
+          className="flex items-center gap-2 leading-none"
+          aria-label="Flow Send — strona główna"
+        >
+          <span
+            className="flex items-center justify-center"
+            style={{
+              width: 28,
+              height: 28,
+              background: "var(--accent-primary)",
+              border: "2px solid var(--border-ink)",
+              borderRadius: "7px 8px 7px 6px",
+              boxShadow: "2px 2px 0 var(--border-ink)",
+            }}
+          >
+            <PaperPlaneTiltIcon size={16} weight="bold" color="#ffffff" />
+          </span>
+          <span
+            className="font-bold text-lg tracking-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
             Flow Send
           </span>
-        </div>
-        <span
-          className="text-xs px-2 py-0.5 font-medium"
-          style={{
-            border: "1px solid var(--border-light)",
-            borderRadius: "6px 7px 6px 5px",
-            color: "var(--text-muted)",
-          }}
-        >
-          beta
-        </span>
+        </Link>
       </div>
     </header>
   )

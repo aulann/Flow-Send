@@ -60,7 +60,7 @@
 
 - Never log file content, clipboard content, or transferred text — only metadata (size, type, filename).
 - Validate session codes before joining any PartyKit room: must match `/^[A-Z0-9]{6}$/`.
-- Validate QR payloads: must contain a recognizable `flowsend.app/send?code=` URL pattern.
+- Validate QR payloads: must contain a recognizable `flow-send.vercel.app/send?code=` URL pattern.
 - Do not expose the PartyKit room name pattern in error messages shown to users.
 - Camera permission must be requested only when the QR scanner component mounts — never on page load.
 

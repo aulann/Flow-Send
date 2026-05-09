@@ -2,11 +2,13 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 import type { DeviceInfo } from "@/types/session"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeftIcon, WarningCircleIcon } from "@phosphor-icons/react"
 import { useQrScanner } from "@/hooks/use-qr-scanner"
 import { isValidCode } from "@/lib/qr"
 import { usePeerConnection } from "@/hooks/use-peer-connection"
 import { useSessionStore } from "@/store/session.store"
+import { useTransferStore } from "@/store/transfer.store"
 import { DeviceBadge } from "@/components/shared/device-badge"
 import { TransferPanel } from "@/components/send/transfer-panel"
 import { useTransfer } from "@/hooks/use-transfer"
@@ -16,6 +18,7 @@ export function SendWaiting() {
   const deviceInfo = useSessionStore((s) => s.deviceInfo)
   const [inputs, setInputs] = useState<string[]>(Array(6).fill(""))
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const router = useRouter()
 
   const deviceInfoRef = useRef<DeviceInfo | null>(null)
   useEffect(() => {
@@ -25,12 +28,20 @@ export function SendWaiting() {
       .catch(() => {})
   }, [])
 
-  const handleData = useCallback((data: string | ArrayBuffer) => {
-    console.log("received data", data)
+  const handleData = useCallback(() => {
+    // Sender ignores incoming data frames — receiver does not echo back.
   }, [])
 
   const { status, error, peerRef, send, disconnect } = usePeerConnection("sender", code, handleData, deviceInfoRef.current)
   const { sendText, sendFile } = useTransfer(send)
+
+  useEffect(() => {
+    if (status === "disconnected") {
+      useTransferStore.getState().clear()
+      useSessionStore.getState().reset()
+      router.push("/")
+    }
+  }, [status, router])
 
   const handleSendFiles = useCallback(async (files: File[]) => {
     for (const file of files) {
@@ -96,6 +107,13 @@ export function SendWaiting() {
               onSendFile={handleSendFiles}
             />
           </div>
+          <button
+            onClick={disconnect}
+            className="sketch-btn w-full py-2 text-sm font-medium"
+            style={{ background: "var(--bg-card)", color: "var(--text-muted)" }}
+          >
+            Rozłącz
+          </button>
         </div>
       </div>
     )
@@ -132,13 +150,22 @@ export function SendWaiting() {
           <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
             {error}
           </p>
-          <button
-            onClick={() => setCode(null)}
-            className="sketch-btn px-5 py-2 text-sm font-medium"
-            style={{ background: "var(--accent-primary)", color: "#fff" }}
-          >
-            Skanuj ponownie
-          </button>
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => setCode(null)}
+              className="sketch-btn flex-1 py-2 text-sm font-medium"
+              style={{ background: "var(--accent-primary)", color: "#fff" }}
+            >
+              Skanuj ponownie
+            </button>
+            <Link
+              href="/"
+              className="sketch-btn flex-1 py-2 text-sm font-medium text-center"
+              style={{ background: "var(--bg-card)", color: "var(--text-muted)" }}
+            >
+              Strona główna
+            </Link>
+          </div>
         </div>
       </div>
     )

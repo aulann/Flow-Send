@@ -1,39 +1,57 @@
-"use client"
-import { useEffect, useRef } from "react"
-import type { DeviceInfo } from "@/types/session"
-import QRCode from "react-qr-code"
-import Link from "next/link"
-import { ArrowLeftIcon } from "@phosphor-icons/react"
-import { useReceiverSession } from "@/hooks/use-session"
-import { usePeerConnection } from "@/hooks/use-peer-connection"
-import { useSessionStore } from "@/store/session.store"
-import { DeviceBadge } from "@/components/shared/device-badge"
-import { ReceiveBoard } from "@/components/receive/receive-board"
-import { useTransfer } from "@/hooks/use-transfer"
+"use client";
+import { useEffect, useRef, useState } from "react";
+import type { DeviceInfo } from "@/types/session";
+import QRCode from "react-qr-code";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "@phosphor-icons/react";
+import { useReceiverSession } from "@/hooks/use-session";
+import { usePeerConnection } from "@/hooks/use-peer-connection";
+import { useSessionStore } from "@/store/session.store";
+import { useTransferStore } from "@/store/transfer.store";
+import { DeviceBadge } from "@/components/shared/device-badge";
+import { ReceiveBoard } from "@/components/receive/receive-board";
+import { useTransfer } from "@/hooks/use-transfer";
 
 export function ReceiveWaiting() {
-  const connectionStatus = useSessionStore((s) => s.status)
-  const deviceInfo = useSessionStore((s) => s.deviceInfo)
+  const connectionStatus = useSessionStore((s) => s.status);
+  const deviceInfo = useSessionStore((s) => s.deviceInfo);
+  const router = useRouter();
 
-  const deviceInfoRef = useRef<DeviceInfo | null>(null)
+  const [deviceInfoRef, setDeviceInfo] = useState<DeviceInfo | null>(null);
   useEffect(() => {
     fetch("/api/device")
-      .then(r => r.json())
-      .then(info => { deviceInfoRef.current = info })
-      .catch(() => {})
-  }, [])
+      .then((r) => r.json())
+      .then((info) => {
+        setDeviceInfo(info);
+      })
+      .catch(() => {});
+  }, []);
 
-  const { handleIncoming } = useTransfer(() => {})
+  const { handleIncoming } = useTransfer(() => {});
 
   const { code, secondsLeft, qrPayload } = useReceiverSession(
-    connectionStatus === "connected" || connectionStatus === "signaling"
-  )
+    connectionStatus === "connected" || connectionStatus === "signaling",
+  );
 
-  const { status, error, disconnect } = usePeerConnection("receiver", code, handleIncoming, deviceInfoRef.current)
+  const { status, error, disconnect } = usePeerConnection(
+    "receiver",
+    code,
+    handleIncoming,
+    deviceInfoRef,
+  );
+
+  useEffect(() => {
+    if (status === "disconnected") {
+      useTransferStore.getState().clear();
+      useSessionStore.getState().reset();
+      router.push("/");
+    }
+  }, [status, router]);
 
   if (status === "connected") {
     return (
-      <div className="relative">
+      <div className="relative" style={{ background: "#DDD8CC" }}>
         {/* Desktop: badge fixed top-center */}
         {deviceInfo && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-sm px-4 hidden sm:block">
@@ -59,7 +77,9 @@ export function ReceiveWaiting() {
             borderTop: "1px solid rgba(0,0,0,0.08)",
           }}
         >
-          {deviceInfo && <DeviceBadge device={deviceInfo} label="Połączono z" />}
+          {deviceInfo && (
+            <DeviceBadge device={deviceInfo} label="Połączono z" />
+          )}
           <button
             onClick={disconnect}
             className="sketch-btn w-full py-2 text-sm font-medium"
@@ -70,7 +90,7 @@ export function ReceiveWaiting() {
         </div>
         <ReceiveBoard />
       </div>
-    )
+    );
   }
 
   if (status === "error") {
@@ -80,22 +100,40 @@ export function ReceiveWaiting() {
         style={{ background: "var(--bg-base)" }}
       >
         <div className="sketch-card p-8 w-full max-w-sm flex flex-col items-center gap-4">
-          <div className="text-base font-semibold" style={{ color: "var(--state-error)" }}>
+          <div
+            className="text-base font-semibold"
+            style={{ color: "var(--state-error)" }}
+          >
             Błąd połączenia
           </div>
-          <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
+          <p
+            className="text-sm text-center"
+            style={{ color: "var(--text-secondary)" }}
+          >
             {error}
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="sketch-btn px-5 py-2 text-sm font-medium"
-            style={{ background: "var(--accent-primary)", color: "#fff" }}
-          >
-            Spróbuj ponownie
-          </button>
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => window.location.reload()}
+              className="sketch-btn flex-1 py-2 text-sm font-medium"
+              style={{ background: "var(--accent-primary)", color: "#fff" }}
+            >
+              Spróbuj ponownie
+            </button>
+            <Link
+              href="/"
+              className="sketch-btn flex-1 py-2 text-sm font-medium text-center"
+              style={{
+                background: "var(--bg-card)",
+                color: "var(--text-muted)",
+              }}
+            >
+              Strona główna
+            </Link>
+          </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -116,7 +154,6 @@ export function ReceiveWaiting() {
       />
 
       <div className="relative z-10 w-full max-w-sm flex flex-col gap-6">
-
         <div className="w-full mb-4">
           <Link
             href="/"
@@ -129,7 +166,10 @@ export function ReceiveWaiting() {
         </div>
 
         <div className="flex flex-col gap-1 mb-2">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+          <h1
+            className="text-2xl font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
             Czekam na połączenie
           </h1>
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -138,19 +178,23 @@ export function ReceiveWaiting() {
         </div>
 
         {status === "signaling" && (
-          <div className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+          <div
+            className="text-sm font-medium"
+            style={{ color: "var(--text-secondary)" }}
+          >
             Łączenie…
           </div>
         )}
 
         <div className="sketch-card p-6 flex flex-col items-center gap-6">
-
-          <div style={{
-            background: "var(--bg-card)",
-            border: "2px solid var(--border-ink)",
-            borderRadius: "14px 13px 14px 15px",
-            padding: "16px",
-          }}>
+          <div
+            style={{
+              background: "var(--bg-card)",
+              border: "2px solid var(--border-ink)",
+              borderRadius: "14px 13px 14px 15px",
+              padding: "16px",
+            }}
+          >
             <QRCode
               value={qrPayload}
               size={200}
@@ -205,10 +249,8 @@ export function ReceiveWaiting() {
               {secondsLeft}s
             </span>
           </div>
-
         </div>
-
       </div>
     </div>
-  )
+  );
 }

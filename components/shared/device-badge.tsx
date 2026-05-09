@@ -1,10 +1,10 @@
-import { DeviceMobile, Monitor, DeviceTablet } from "@phosphor-icons/react"
+import { DeviceMobileIcon, MonitorIcon, DeviceTabletIcon } from "@phosphor-icons/react"
 import type { DeviceInfo } from "@/types/session"
 
 const iconMap = {
-  phone: DeviceMobile,
-  tablet: DeviceTablet,
-  desktop: Monitor,
+  phone: DeviceMobileIcon,
+  tablet: DeviceTabletIcon,
+  desktop: MonitorIcon,
 }
 
 interface DeviceBadgeProps {

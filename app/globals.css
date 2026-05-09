@@ -150,6 +150,7 @@ body {
   .chalkboard {
     overflow-x: clip;
     overflow-y: visible;
+    padding-top: 1px;
   }
 }
 
@@ -194,4 +195,15 @@ body {
   top: -7px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

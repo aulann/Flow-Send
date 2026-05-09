@@ -33,7 +33,7 @@ Sessions are stateless on the server — no database, no file storage.
 1. Receiver navigates to /receive
 2. Client generates a 6-character alphanumeric session code
 3. Client creates a PartyKit room: "fs-{code}"
-4. QR encodes the URL: https://flowsend.app/send?code={code}
+4. QR encodes the URL: https://flow-send.vercel.app/send?code={code}
 5. 30-second countdown timer starts; if it expires with no connection → new code + new room
 6. Sender navigates to /send, scans QR or enters code
 7. Sender joins the PartyKit room "fs-{code}"

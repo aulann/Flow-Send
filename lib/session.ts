@@ -7,7 +7,7 @@ export function generateSessionCode(): string {
 export function buildQrPayload(code: string): string {
   const origin = typeof window !== "undefined"
     ? window.location.origin
-    : "https://flowsend.app"
+    : "https://flow-send.vercel.app"
   return `${origin}/send?code=${code}`
 }
 

@@ -4,6 +4,7 @@ import {
   TextTIcon, ImageIcon, FilmStripIcon, FileIcon, LinkIcon
 } from "@phosphor-icons/react"
 import { useTransferStore } from "@/store/transfer.store"
+import { MAX_FILE_SIZE, formatFileSize } from "@/lib/transfer"
 import type { TransferSubtype } from "@/types/transfer"
 
 interface TransferPanelProps {
@@ -22,6 +23,7 @@ const types: { subtype: TransferSubtype; icon: React.ElementType; label: string;
 export function TransferPanel({ onSendText, onSendFile }: TransferPanelProps) {
   const [selected, setSelected] = useState<TransferSubtype>("text")
   const [value, setValue] = useState("")
+  const [fileError, setFileError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const sendingProgress = useTransferStore((s) => s.sendingProgress)
   const isSending = sendingProgress > 0 && sendingProgress < 100
@@ -41,10 +43,23 @@ export function TransferPanel({ onSendText, onSendFile }: TransferPanelProps) {
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, 5)
-    if (files.length === 0) return
-    onSendFile(files)
+    const picked = Array.from(e.target.files ?? []).slice(0, 5)
     e.target.value = ""
+    if (picked.length === 0) return
+
+    const tooBig = picked.filter((f) => f.size > MAX_FILE_SIZE)
+    const ok = picked.filter((f) => f.size <= MAX_FILE_SIZE)
+
+    if (tooBig.length > 0) {
+      const names = tooBig.map((f) => `${f.name} (${formatFileSize(f.size)})`).join(", ")
+      setFileError(
+        `Pomijam ${tooBig.length === 1 ? "plik" : "pliki"} przekraczające ${formatFileSize(MAX_FILE_SIZE)}: ${names}`,
+      )
+    } else {
+      setFileError(null)
+    }
+
+    if (ok.length > 0) onSendFile(ok)
   }
 
   const currentType = types.find((t) => t.subtype === selected)!
@@ -155,8 +170,23 @@ export function TransferPanel({ onSendText, onSendFile }: TransferPanelProps) {
       {/* File tile hint */}
       {isFileTile && !isSending && (
         <p className="text-xs text-center" style={{ color: "var(--text-faint)" }}>
-          Kliknij kafelek ponownie · max 5 plików na raz
+          Kliknij kafelek ponownie · max 5 plików · do {formatFileSize(MAX_FILE_SIZE)} każdy
         </p>
+      )}
+
+      {/* File error */}
+      {fileError && (
+        <div
+          className="text-xs px-3 py-2"
+          style={{
+            background: "rgba(220, 38, 38, 0.08)",
+            border: "1px solid var(--state-error)",
+            borderRadius: "6px 7px 6px 5px",
+            color: "var(--state-error)",
+          }}
+        >
+          {fileError}
+        </div>
       )}
     </div>
   )

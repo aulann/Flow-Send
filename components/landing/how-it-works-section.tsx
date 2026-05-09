@@ -1,21 +1,21 @@
-import { DeviceMobile, QrCode, CheckCircle } from "@phosphor-icons/react/dist/ssr"
+import { DeviceMobileIcon, QrCodeIcon, CheckCircleIcon } from "@phosphor-icons/react/dist/ssr"
 
 const steps = [
   {
     number: "01",
-    icon: DeviceMobile,
+    icon: DeviceMobileIcon,
     title: "Otwórz na obu urządzeniach",
-    description: "Wejdź na flowsend.app z telefonu i komputera — bez instalacji.",
+    description: "Wejdź na flow-send.vercel.app z telefonu i komputera — bez instalacji.",
   },
   {
     number: "02",
-    icon: QrCode,
+    icon: QrCodeIcon,
     title: "Zeskanuj kod QR",
     description: 'Na urządzeniu wysyłającym kliknij "Wyślij" i zeskanuj kod z ekranu odbiorcy.',
   },
   {
     number: "03",
-    icon: CheckCircle,
+    icon: CheckCircleIcon,
     title: "Gotowe",
     description: "Pliki pojawiają się od razu. Sesja znika po zamknięciu okna.",
   },

@@ -431,7 +431,7 @@ export function ReceiveBoard() {
         );
       })}
 
-      {isMobile && <div style={{ height: 100 }} />}
+      {isMobile && <div style={{ height: 180 }} />}
     </div>
   );
 }

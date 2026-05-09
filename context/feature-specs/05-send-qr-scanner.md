@@ -26,7 +26,7 @@ const CODE_REGEX = /^[A-Z0-9]{6}$/
 const QR_URL_PATTERN = /\/send\?code=([A-Z0-9]{6})(?:$|&)/
 
 export function parseQrPayload(raw: string): string | null {
-  // Full URL: https://flowsend.app/send?code=ABCD12
+  // Full URL: https://flow-send.vercel.app/send?code=ABCD12
   const match = raw.match(QR_URL_PATTERN)
   if (match) return match[1]
 

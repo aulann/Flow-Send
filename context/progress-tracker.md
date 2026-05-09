@@ -4,23 +4,26 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Feature 11: complete — chalkboard receive board implemented and `npm run build` passes.
+- **v1 complete.** All 13 planned features shipped, build passes, project cleaned and optimized.
 
-## Completed
+## Completed (v1 release)
 
-- Context documentation: all 6 context files authored and finalized.
-- `CLAUDE.md` written with invariants, stack reference, and sketch style summary.
-- Feature 01 spec written: `context/feature-specs/01-project-setup.md`.
-- **Feature 01 — Project Setup & Design System** (`npm run build` passes):
-  - Next.js 16.2.5 with App Router, TypeScript strict mode, Tailwind v4.
-  - All dependencies installed: `simple-peer`, `react-qr-code`, `html5-qrcode`, `@phosphor-icons/react`, `zustand`, `partykit`, `partysocket`, `geoip-lite`.
-  - shadcn/ui initialised (new-york style, neutral base); components added: button, card, dialog, input, textarea, scroll-area, separator, badge.
-  - `lib/utils.ts` with `cn()` helper.
-  - Full folder structure with stubs: `app/api/device/`, `party/`, `lib/`, `hooks/`, `store/`, `components/{landing,send,receive,shared}/`, `types/`.
-  - `app/globals.css` — full design system: all CSS custom property tokens + `@theme inline` Tailwind mapping + sketch utility classes (`.sketch-card`, `.sketch-btn`, `.sketch-input`, `.dot-grid`).
-  - `app/layout.tsx` — Cause font via `next/font/google`, `lang="pl"`.
-  - `app/page.tsx` — placeholder page using design tokens.
-  - `partykit.json` + `.env.local` with `NEXT_PUBLIC_PARTYKIT_HOST`.
+| # | Feature | Status |
+|---|---------|--------|
+| 01 | Project setup & design system | ✅ |
+| 02 | Landing page | ✅ |
+| 03 | PartyKit signaling server | ✅ |
+| 04 | Receive: QR display + countdown | ✅ |
+| 05 | Send: QR scanner + manual code | ✅ |
+| 06 | WebRTC peer connection | ✅ |
+| 07 | Device detection | ✅ |
+| 08 | Text & link transfer | ✅ |
+| 09 | File transfer (chunked + backpressure) | ✅ |
+| 11 | Receive board (chalkboard UI) | ✅ |
+| 12 | Disconnect flow | ✅ |
+| 13 | PWA manifest | ✅ |
+
+(Feature 10 was rolled into 09 during implementation.)
 
 ## In Progress
 
@@ -28,82 +31,58 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Recently Completed
 
-- **Feature 11 — Receive Board (Chalkboard UI)** (`npm run build` passes):
-  - `app/globals.css` — added `.chalkboard`, `.chalk-grain`, `.chalk-card`, `.chalk-pin` CSS classes with SVG noise grain, smudge gradients, paper card style, and red pin.
-  - `components/receive/receive-board.tsx` — full replacement: chalkboard layout with `ChalkScribbles` SVG overlay, deterministic `hash()` + `cardTransform()` for scattered absolute positions on desktop, rotation-only column layout on mobile, `TextCard`, `FileCard`, `InProgressCard` as pinned paper cards, `ResizeObserver`-based board size tracking, empty state.
-  - `components/receive/receive-waiting.tsx` — connected state redesigned: `ReceiveBoard` fills full viewport, `DeviceBadge` and "Rozłącz" button float as absolutely positioned overlays above the board.
+- **Polish pass (post-v1.1)** (`npm run build` passes):
+  - **Hero illustration optimized**: 2752×1536 / 1041 KB → 1280×wide / 103 KB palette PNG (≈90% smaller, mathematically lossless). Next.js `<Image>` auto-serves WebP/AVIF to capable clients. Generation script: `scripts/optimize-hero.mjs` (uses `sharp`).
+  - **OG image**: `public/og-image.png` (1200×630, 67 KB) generated via `scripts/gen-og.mjs` — design tokens, dot grid, sketch border, accent tile + wordmark, headline, accent chip. Wired into `metadata.openGraph` and `metadata.twitter` (card: `summary_large_image`).
+  - **`metadataBase`** set from `NEXT_PUBLIC_SITE_URL` (default `https://flow-send.vercel.app`) — silences Next 16 warning and makes social cards work in production.
+  - **File size limit**: `MAX_FILE_SIZE = 1 GB` exposed from `lib/transfer.ts`. `TransferPanel` filters dropped files, shows red inline error listing rejected names + sizes, and proceeds with the rest. Hint text now reads `max 5 plików · do 1.0 GB każdy`.
+  - **`prefers-reduced-motion`**: global CSS rule in `globals.css` collapses all animations/transitions to ~0ms when the user has reduced-motion enabled (countdown bar, chalk-card hover, sketch-btn, …).
 
-- **Feature 09 — File Transfer** (`npm run build` passes):
-  - `types/transfer.ts` — full replacement: `FileStartFrame`, `FileEndFrame`, `TextTransferItem`, `FileTransferItem` union, `InProgressTransfer`.
-  - `lib/transfer.ts` — implemented: `chunkFile` async generator (64 KB chunks), `formatFileSize`, `mimeToSubtype`.
-  - `store/transfer.store.ts` — added `inProgress`, `sendingProgress`, `setInProgress`, `setSendingProgress`; `removeItem` now revokes blob URLs; `clear` revokes all blob URLs.
-  - `hooks/use-transfer.ts` — added `sendFile` (chunked send with backpressure via RTCDataChannel.bufferedAmount); `handleIncoming` now handles binary ArrayBuffer chunks and `file-start`/`file-end` control frames.
-  - `hooks/use-peer-connection.ts` — fixed `peer.on("data")` handler: JSON frames passed as string, binary Buffer converted to ArrayBuffer before calling `onData`.
-  - `components/send/transfer-panel.tsx` — all 5 tiles active; hidden file input; progress bar while sending; file tile hint.
-  - `components/send/send-waiting.tsx` — wired `peerRef` and `sendFile`; `TransferPanel` uses new `onSendText`/`onSendFile` props.
-  - `components/receive/receive-board.tsx` — `FileItemCard` (image preview, Pobierz link, ✕), `TextItemCard` (existing), `InProgressCard` (receiving progress bar); empty state hides during transfer.
+- **Cleanup pass (post-v1)** (`npm run build` passes):
+  - **Navbar redesign**: logo replaced with `PaperPlaneTiltIcon` inside accent-blue sketch tile + tightened typography; "beta" badge removed; whole logo block now wrapped in `Link` to `/` for a11y.
+  - **Footer**: copyright with year + link to `aulan.pl` (target=_blank, rel=noopener).
+  - **Bug fix — deprecated Phosphor names**: `DeviceMobile/Monitor/DeviceTablet` → `*Icon` in `device-badge.tsx`; `DeviceMobile/QrCode/CheckCircle` → `*Icon` in `how-it-works-section.tsx`. Eliminates console deprecation warnings.
+  - **Bug fix — leftover debug log**: removed `console.log("received data", …)` no-op handler in `send-waiting.tsx`; replaced with documented stub.
+  - **Removed dead code**:
+    - `hooks/use-device-info.ts` — orphan hook (both pages fetch `/api/device` directly via refs).
+    - `components/ui/*` — full shadcn scaffold (badge, button, card, dialog, input, scroll-area, separator, textarea), never imported.
+    - `lib/utils.ts` — only used by `components/ui/*`.
+    - `components.json` — shadcn config.
+    - `public/{file,globe,next,vercel,window}.svg` — Next.js default scaffold.
+  - **Removed unused dependencies**: `lucide-react`, `class-variance-authority`, `@radix-ui/react-slot`, `radix-ui`, `tailwind-merge` (86 transitive packages dropped).
+  - **Metadata**: `layout.tsx` upgraded to title template + OpenGraph + Twitter card + viewport (`width=device-width`, `initialScale=1`, `viewportFit=cover`).
+  - **Per-page metadata**: `/send` → "Wyślij", `/receive` → "Odbierz" with descriptions.
+  - **`public/robots.txt`** added (allow all, disallow `/api/`).
 
-- **Feature 08 — Text & Link Transfer** (`npm run build` passes):
-  - `types/transfer.ts` — expanded: `TransferSubtype`, `TextFrame`, `RemoveFrame`, `ControlFrame` (union), `TransferItem`.
-  - `store/transfer.store.ts` — Zustand store: `items`, `addItem`, `removeItem`, `clear`.
-  - `hooks/use-transfer.ts` — `sendText` (builds TextFrame, calls `send`), `handleIncoming` (parses ControlFrame, adds to store).
-  - `hooks/use-peer-connection.ts` — added `send` helper to return value (writes to `peerRef.current`).
-  - `components/send/transfer-panel.tsx` — type selector (5 tiles: text+link active, image/video/file disabled), textarea/URL input, "Wyślij →" button.
-  - `components/receive/receive-board.tsx` — minimal received items list: ItemCard with copy + remove, empty state with dashed border.
-  - `components/send/send-waiting.tsx` — connected state now shows DeviceBadge + TransferPanel on dot-grid background.
-  - `components/receive/receive-waiting.tsx` — connected state now shows DeviceBadge + ReceiveBoard + Rozłącz button; `handleIncoming` wired as `onData`.
+- **Feature 13 — PWA Manifest** (`npm run build` passes):
+  - `public/manifest.json` with name, short_name, description, theme/background colors, 4 icon entries (192, 512, each as standard + maskable).
+  - `public/icons/{icon-192,icon-192-maskable,icon-512,icon-512-maskable}.png` generated via `scripts/gen-icons.mjs` (devDep `canvas`).
+  - `app/layout.tsx` — `metadata.manifest`, `metadata.appleWebApp`, `metadata.icons.apple`, `viewport.themeColor`.
 
-- **Feature 07 — Device Detection** (`npm run build` passes):
-  - `types/session.ts` — `DeviceType` and `DeviceInfo` interface added.
-  - `lib/device.ts` — User-Agent parsing: OS + browser detection, device type classification.
-  - `lib/geolocation.ts` — `geoip-lite` IP lookup, IPv6-mapped address handling.
-  - `app/api/device/route.ts` — `GET /api/device`: reads UA + IP, returns JSON.
-  - `next.config.ts` — `serverExternalPackages: ["geoip-lite"]` (prevents Turbopack bundling issue with `__dirname`).
-  - `store/session.store.ts` — `deviceInfo` field + `setDeviceInfo` setter added.
-  - `types/transfer.ts` — `DeviceInfoFrame` control frame type.
-  - `components/shared/device-badge.tsx` — Reusable device banner with Phosphor icon, sketch style.
-  - `hooks/use-device-info.ts` — Hook for fetching own device info from `/api/device`.
-  - `hooks/use-peer-connection.ts` — On connect: fetches own device info, sends `device-info` frame over data channel; on receive: parses frame and calls `setDeviceInfo`.
-  - `components/receive/receive-waiting.tsx` — Shows `DeviceBadge` on connected status.
-  - `components/send/send-waiting.tsx` — Shows `DeviceBadge` on connected status.
+- **Feature 12 — Disconnect Flow** (`npm run build` passes):
+  - `components/send/send-waiting.tsx` — `useEffect` redirect on `status === "disconnected"` (clears transfer store, resets session, pushes to `/`); "Rozłącz" button below TransferPanel; error state shows "Skanuj ponownie" + "Strona główna" side-by-side.
+  - `components/receive/receive-waiting.tsx` — same redirect effect; error state shows "Spróbuj ponownie" + "Strona główna".
+  - `store/session.store.ts` — `reset()` already cleared `deviceInfo`.
 
-- **Feature 06 — WebRTC Peer Connection** (`npm run build` passes):
-  - `types/session.ts` — `PeerRole` and `ConnectionStatus` types.
-  - `store/session.store.ts` — Zustand store: `code`, `role`, `status`, `error`, setters, `reset`.
-  - `hooks/use-peer-connection.ts` — full implementation: PartySocket room management, dynamic `simple-peer` import, initiator/non-initiator logic, signal relay, `peer-joined`/`peer-left`/`room-full` handling.
-  - `hooks/use-session.ts` — added `paused` parameter to stop countdown during signaling/connected.
-  - `components/receive/receive-waiting.tsx` — wired `usePeerConnection("receiver")`, status-aware render (connected / error / waiting QR).
-  - `components/send/send-waiting.tsx` — replaced placeholder with real `usePeerConnection("sender")`, full status-aware render.
+- **Feature 11 — Receive Board (Chalkboard UI)** — chalk-card layout, SVG noise grain, deterministic hash-positioned cards, red pin, mobile column layout.
 
-- **Feature 05 — Send Page: QR Scanner + Manual Code Input** (`npm run build` passes):
-  - `lib/qr.ts` — `parseQrPayload()` (URL pattern + raw 6-char fallback), `isValidCode()`.
-  - `hooks/use-qr-scanner.ts` — `useQrScanner()`: dynamic import of `html5-qrcode`, camera lifecycle, one-shot `calledRef` gate, permission error discrimination.
-  - `app/send/page.tsx` — server component shell.
-  - `components/send/send-waiting.tsx` — live QR scanner area, camera-denied/error fallback, 6-box manual code input (auto-advance, backspace, paste), "Połącz →" button, "Łączenie…" placeholder state.
+- **Feature 09 — File Transfer** — `chunkFile` async generator (64 KB), backpressure via `RTCDataChannel.bufferedAmount`, `file-start`/`file-end` control frames, blob URL revocation on remove/clear.
 
-- **Feature 04 — Receive Page: QR Display + Countdown** (`npm run build` passes):
-  - `lib/session.ts` — `generateSessionCode()` (crypto.getRandomValues, 36-char alphabet), `buildQrPayload()`, `isValidSessionCode()`.
-  - `hooks/use-session.ts` — `useReceiverSession()` hook: setTimeout-based 30s countdown, auto-regenerates code on expiry.
-  - `app/receive/page.tsx` — server component shell.
-  - `components/receive/receive-waiting.tsx` — QR code (react-qr-code), 6-char code chips, SVG countdown ring with CSS transition.
+- **Feature 08 — Text & Link Transfer** — `ControlFrame` union, `useTransfer` sender/receiver hook.
 
-- **Feature 03 — PartyKit Signaling Server** (`npx partykit dev` passes):
-  - `party/server.ts` — pełna implementacja: 2-connection limit per room, relay SDP/ICE, `peer-joined`, `peer-left`, `room-full`.
-  - `.env.local` + `partykit.json` — już skonfigurowane poprawnie.
+- **Feature 07 — Device Detection** — `geoip-lite` IP geolocation, UA parsing, device badge over data channel.
 
-- **Feature 02 — Landing Page** (`npm run build` passes):
-  - `components/landing/landing-navbar.tsx` — fixed top bar, logo + "beta" badge.
-  - `components/landing/hero-section.tsx` — full-height hero, headline, subtext, CTA buttons, decorative SVG arrow.
-  - `components/landing/how-it-works-section.tsx` — 3-step grid with sketch cards.
-  - `components/landing/transfer-types-section.tsx` — 5 type tiles with `.sketch-card-sm`.
-  - `components/landing/landing-footer.tsx` — simple one-line footer.
-  - `app/globals.css` — added `.sketch-card-sm` variant.
-  - `app/page.tsx` — composed from all landing sections.
+- **Feature 06 — WebRTC Peer Connection** — `usePeerConnection` with PartySocket signaling, dynamic `simple-peer` import, signal queue for sender, stable refs for `onData`/`ownDeviceInfo` to prevent effect re-runs destroying the peer.
 
-## Next Up
-- Feature 12: Session history (sender side) — session list below transfer type selector showing sent items, per-item delete.
-- Feature 13: Disconnect flow — disconnect button on both sides, session cleanup, return to landing.
-- Feature 14: PWA manifest — `manifest.json`, icons, `meta` tags, installable from browser on Android and iOS.
+- **Feature 05 — Send Page** — `html5-qrcode` scanner with permission discrimination, 6-box manual input.
+
+- **Feature 04 — Receive Page** — `react-qr-code` SVG, 6-char chips, CSS countdown bar, auto-regenerate.
+
+- **Feature 03 — PartyKit Signaling Server** — 2-connection limit per room, `peer-joined`/`peer-left`/`room-full`.
+
+- **Feature 02 — Landing Page** — hero + how-it-works + transfer-types + footer.
+
+- **Feature 01 — Project Setup & Design System** — Next.js 16, Tailwind v4, full design tokens, sketch utility classes, Cause font.
 
 ## Open Questions
 
@@ -111,10 +90,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Resolved Decisions
 
-- Font: **Cause** (Google Fonts, variable) confirmed. Lato as fallback for small body text if readability issues arise.
-- Share button: Web Share API (`navigator.share`) on mobile; copy to clipboard on desktop.
-- Clipboard transfer type: **removed** from the app entirely (5 transfer types remain: text, image, video, file, link).
-- Device name: auto-detected from User-Agent (e.g. "iPhone · Safari") — no user input.
+- Font: **Cause** (Google Fonts).
+- Share button: Web Share API on mobile; copy to clipboard on desktop.
+- Clipboard transfer type: removed from the app entirely (5 transfer types: text, image, video, file, link).
+- Device name: auto-detected from User-Agent.
+- shadcn UI scaffolding removed in cleanup pass — design system is fully driven by `globals.css` sketch classes; reintroduce only if a complex primitive (popover, command palette, …) is actually needed.
 
 ## Architecture Decisions
 
@@ -123,16 +103,21 @@ Update this file whenever the current phase, active feature, or implementation s
 - WebRTC (simple-peer) for actual file transfer — avoids server bandwidth costs.
 - TURN server deferred to v2 — ~30% of users on restrictive NAT will see a connection error in v1.
 - Session codes are client-generated on the receiver — no API round-trip needed for code creation.
-- `geoip-lite` for IP geolocation — runs server-side, no external API, no cost.
+- `geoip-lite` for IP geolocation — runs server-side, no external API, no cost. Marked `serverExternalPackages` in `next.config.ts` to avoid Turbopack `__dirname` issue.
 - `react-qr-code` for QR generation (SVG, SSR-safe) over canvas-based alternatives.
-- Phosphor Icons Regular weight default, Bold for CTAs and transfer type tiles.
-- shadcn CLI v4, style `base-nova`, Radix primitives — do not edit `components/ui/*`.
+- Phosphor Icons — always import the `*Icon`-suffixed names (older bare names trigger runtime deprecation warnings).
 - Tailwind v4 — CSS-only config, no `tailwind.config.ts`.
+
+## Deferred / out of scope (v2+)
+
+- TURN server (covers users on symmetric NAT).
+- Sender-side session history.
+- Service worker / offline mode.
+- Resumable transfers across reconnects.
 
 ## Session Notes
 
-- Font: Cause (Google Fonts) — już wdrożony w Feature 01.
 - Logo and illustration prompts to be written separately by the user's request.
 - Budget constraint: $0 additional monthly cost. Vercel free tier + PartyKit free tier.
-- Next.js version: 16 (same as Ghost AI reference project).
+- Next.js version: 16.2.5.
 - Deployment: Vercel for Next.js, `partykit deploy` for signaling worker.

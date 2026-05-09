@@ -1,4 +1,5 @@
 export const CHUNK_SIZE = 64 * 1024 // 64 KB
+export const MAX_FILE_SIZE = 1024 * 1024 * 1024 // 1 GB — receiver buffers chunks in RAM until file-end
 
 export async function* chunkFile(file: File): AsyncGenerator<ArrayBuffer> {
   let offset = 0
