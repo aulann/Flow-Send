@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cause } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const cause = Cause({
@@ -63,7 +64,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl" className={cause.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
